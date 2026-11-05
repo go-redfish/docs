@@ -17,9 +17,9 @@ The authoritative table is [`PARITY.md`](https://github.com/go-redfish/redfish/b
 `redfish` repository, committed with the code it describes, so that a command is marked done in the same
 change that implements it. This page does not copy it, because a copy is what drifts.
 
-What exists in v0.7.0:
+What exists in v0.8.0:
 
-| Capability | In v0.7.0 |
+| Capability | In v0.8.0 |
 | --- | --- |
 | service root and discovery | yes |
 | Basic and session authentication | yes |
@@ -32,9 +32,10 @@ What exists in v0.7.0:
 | Chassis commands of the two modules | yes (v0.5.0) |
 | Manager commands of the three modules | yes (v0.6.0) |
 | Accounts and Sessions commands | yes (v0.7.0) |
-| update (v0.8.0), storage (v0.9.0) | to come |
+| Update commands | yes (v0.8.0) |
+| storage (v0.9.0) | to come |
 
-At v0.7.0, 87 of the 99 commands are done. The 12 others are update (7) and storage (5).
+At v0.8.0, 94 of the 99 commands are done. The 5 others are the storage commands.
 
 Any of the 99 commands can already be sent by hand with `redfish raw`. A dedicated command adds what the
 Ansible module adds on top of the request: discovery of the right resource, a check of the allowed values
