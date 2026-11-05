@@ -17,9 +17,9 @@ The authoritative table is [`PARITY.md`](https://github.com/go-redfish/redfish/b
 `redfish` repository, committed with the code it describes, so that a command is marked done in the same
 change that implements it. This page does not copy it, because a copy is what drifts.
 
-What exists in v0.4.0:
+What exists in v0.5.0:
 
-| Capability | In v0.4.0 |
+| Capability | In v0.5.0 |
 | --- | --- |
 | service root and discovery | yes |
 | Basic and session authentication | yes |
@@ -29,7 +29,10 @@ What exists in v0.4.0:
 | [mock BMC]({{< relref "mock-bmc.md" >}}) | yes |
 | [`redfish` command]({{< relref "cli.md" >}}): sessions, raw requests, systems, mock | yes |
 | Systems commands of the three modules | yes (v0.4.0), except virtual media (with Managers) and storage (with Storage) |
-| chassis, managers, accounts, update, storage, events, certificates | to come, one area per minor version |
+| Chassis commands of the two modules | yes (v0.5.0) |
+| managers, accounts, update, storage, events, certificates | to come, one area per minor version |
+
+At v0.5.0, 47 of the 99 commands are done; the 52 others belong to the areas still to come.
 
 Any of the 99 commands can already be sent by hand with `redfish raw`. A dedicated command adds what the
 Ansible module adds on top of the request: discovery of the right resource, a check of the allowed values
