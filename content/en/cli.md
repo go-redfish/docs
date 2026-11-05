@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.5.0.
+standard error. This page follows the `--help` of v0.6.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.5.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.6.0
 ```
 
 ## Global flags {#global}
@@ -100,6 +100,8 @@ an error that lists the systems.
 | `systems asset-tag` | sets `AssetTag` |
 | `systems inventory` | system, cpu, memory, nic, psu |
 | `systems health` | the health of the system and its subsystems |
+| `systems logs` | the entries of the system's log services, and `logs clear` (v0.6.0) |
+| `systems virtual-media` | get, insert, eject (v0.6.0) |
 
 Each command's flags are in its `--help`.
 
@@ -131,7 +133,37 @@ them.
 The `Power` and `Thermal` resources are deprecated in favour of `PowerSubsystem`, `ThermalSubsystem`
 and `Sensors`, but many BMCs still serve only them, so the command reads both.
 
+## managers {#managers}
+
+Since **v0.6.0**, `redfish managers` drives the Manager resources (the BMC itself): the Manager commands
+of the three Ansible modules. `inventory`, `health` and `nic get` cover every manager when no `--id` is
+given. The other commands act on one manager: the only one, or the one `--id` names.
+
+| Command | What it reads or does |
+| --- | --- |
+| `managers list` | lists the managers (their paths) |
+| `managers inventory` | identity and firmware (`GetManagerInventory`) |
+| `managers health` | the health of the managers |
+| `managers power` | `PowerGracefulRestart` (alias `GracefulRestart`), `PowerOn`, `PowerForceOff`, `PowerForceRestart`, `PowerGracefulShutdown`, `PowerReboot`; `--wait` blocks until the service answers again (`--wait-delay`, `--wait-timeout`) |
+| `managers reset-to-defaults` | `ResetAll`, `PreserveNetworkAndUsers`, `PreserveNetwork` |
+| `managers network-protocols` | the network services (HTTP, SSH, IPMI…): get, set |
+| `managers ntp set` | the NTP service |
+| `managers datetime` | the date, time and UTC offset: get, set |
+| `managers nic` | the manager's network interfaces: get, set |
+| `managers host-interface` | the host interfaces: get, set |
+| `managers service-id` | `ServiceIdentification`: get, set |
+| `managers logs` | the entries of the log services, and `logs clear` |
+| `managers virtual-media` | get, insert, eject |
+
+`managers virtual-media insert --image URL` puts the image in the first free slot that supports one of
+the `--media-type` values. It uses the `InsertMedia` action when the slot has one, else a PATCH. Nothing
+is sent when the image is already inserted. The password to fetch the image is read from
+`--image-password-file` (mode 0600), never given on the command line.
+
+v0.6.0 also added `systems virtual-media` (get, insert, eject) for services that attach virtual media to
+the system, `systems logs` (entries and clear) and `chassis logs`.
+
 ## Coming next {#next}
 
-Commands for the other areas (managers, accounts, update, storage, events, certificates) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
+Commands for the other areas (accounts, update, storage, events, certificates) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
 as it lands.
