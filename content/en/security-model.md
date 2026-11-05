@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.6.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.7.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -61,6 +61,10 @@ The `redfish` command follows the same rules, with these additions:
   `--password-file`, whose mode should be 0600;
 - `session login` saves the session token in a 0600 file under the user's config directory and never
   prints it. `session logout` ends the session at the BMC and removes the file;
+- a password the command sends to the BMC (a new account's password, an image server's password) is
+  read only from a 0600 file or standard input. In the library, an account password is a `Secret`,
+  which prints as `[redacted]` in every format, and an error from a service that echoes it back is
+  redacted (v0.7.0);
 - `--insecure` turns certificate verification off for one run. You have to ask for it explicitly, it
   prints a warning on stderr, and it is refused together with `--ca-file`.
 
