@@ -1,0 +1,140 @@
+# go-redfish documentation — Hugo + Hextra, built like go-llmflow/docs.
+#
+# Each documentation version is a separate build under
+# https://go-redfish.github.io/docs/<version>/, where <version> is the minor
+# version of the code the pages describe, or "main" while the pages describe
+# more than the last tag. The CI sets it through --baseURL, from
+# params.docs.version below; this default is the same build.
+baseURL: "https://go-redfish.github.io/docs/main/"
+title: "go-redfish docs"
+
+# themes/hextra is the tannevaled/hextra fork, pinned at a release tag as a
+# submodule: upstream Hextra plus opt-in features.
+theme: hextra
+
+defaultContentLanguage: en
+defaultContentLanguageInSubdir: false
+
+languages:
+  en:
+    label: "English"
+    contentDir: content/en
+    weight: 1
+
+enableRobotsTXT: true
+# Git history dates every page: "Last updated on" at the foot of each one.
+enableGitInfo: true
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+    parser:
+      attribute:
+        title: true
+        block: true
+  highlight:
+    noClasses: false
+
+# ⛔ The content is NOT under content/en/docs. This site is served AT /docs/,
+# so a "docs" section would make every page /docs/docs/… . Hextra picks its
+# documentation layout from the section being called "docs", so with the
+# content at the root the type is cascaded instead.
+# ⛔ "target", not "_target" (deprecated in Hugo 0.156); the build runs with
+# --panicOnWarning.
+cascade:
+  - target:
+      path: "/**"
+    params:
+      type: docs
+
+module:
+  # The mark and the favicon are the landing's own files (submodule branding/ =
+  # go-redfish/go-redfish.github.io), mounted under /images/brand/ instead of
+  # being copied here: one source for the organisation's look.
+  mounts:
+    - source: static
+      target: static
+    - source: assets
+      target: assets
+    - source: branding/static/img
+      target: static/images/brand
+      files: ["logo.svg"]
+    - source: branding/static
+      target: static/images/brand
+      files: ["favicon.svg"]
+
+# Navbar, left to right: version, theme, search, sources. The version selector
+# is the fork's own component (themes/hextra/layouts/_partials/components/
+# version-select.html): it reads versions.json, which pagespublish writes.
+menu:
+  main:
+    - name: Version
+      weight: 3
+      params:
+        type: partial
+        partial: components/version-select.html
+    - name: Theme
+      weight: 4
+      params:
+        type: theme-toggle
+        combo: true
+    - name: Search
+      weight: 5
+      params:
+        type: search
+    - name: GitHub
+      url: https://github.com/go-redfish
+      weight: 6
+      params:
+        icon: github
+
+params:
+  docs:
+    # The pages describe the redfish module as it is on main (the mock BMC, the
+    # command and the parity table are marked as they land), so the build is
+    # "main" until a release covers them; then vMAJOR.MINOR.PATCH.
+    version: "main"
+  versions:
+    # What the version selector shows for the "main" build (development icon).
+    development: "main"
+  description: "go-redfish: Go libraries for the DMTF Redfish API of a server's BMC. Getting started, the security model, the mock BMC, the command-line reference and the parity status."
+  navbar:
+    displayTitle: true
+    displayLogo: true
+    logo:
+      path: images/brand/logo.svg
+      dark: images/brand/logo.svg
+      width: 32
+      height: 32
+      # Related sites, opened from the chevron beside the title.
+      menu:
+        - name: go-redfish
+          url: https://go-redfish.github.io/
+          logo: images/brand/logo.svg
+  theme:
+    default: system
+    # The theme toggle is in the navbar (menu above).
+    displayToggle: false
+    # Dark Reader would darken the light theme itself.
+    darkreaderLock: true
+  footer:
+    enable: true
+    displayCopyright: false
+    displayPoweredBy: false
+  displayUpdatedDate: true
+  dateFormat: "January 2, 2006"
+  toc:
+    displayTags: true
+  page:
+    width: normal
+    # The front matter description as a subtitle under the title.
+    displayDescription: true
+    # "Created on ... by ... / Modified on ... by ..." at the foot of each page:
+    # creation from data/pagehistory.json (the CI writes it with the theme's
+    # cmd/pagehistory, which needs the full history); modification from
+    # git (enableGitInfo).
+    history: true
+  editURL:
+    enable: true
+    base: "https://github.com/go-redfish/docs/edit/main/content/en"
