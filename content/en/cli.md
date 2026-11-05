@@ -1,15 +1,15 @@
 ---
 title: "Command-line reference"
 weight: 50
-description: "The redfish command of v0.3.0: sessions, raw requests and a mock BMC."
+description: "The redfish command: sessions, raw requests, systems, and a mock BMC."
 ---
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.3.0.
+standard error. This page follows the `--help` of v0.4.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.3.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.4.0
 ```
 
 ## Global flags {#global}
@@ -76,13 +76,35 @@ printf 'password' > pw && chmod 600 pw
 E=--endpoint=https://127.0.0.1:PORT
 redfish $E --ca-file ./mock-ca.pem --user admin --password-file pw session login
 redfish $E --ca-file ./mock-ca.pem --session raw get /redfish/v1/Systems
-redfish $E --ca-file ./mock-ca.pem --session raw post \
-  /redfish/v1/Systems/437XR1138R2/Actions/ComputerSystem.Reset --data '{"ResetType":"ForceOff"}'
+redfish $E --ca-file ./mock-ca.pem --session systems power PowerForceOff
 redfish $E --ca-file ./mock-ca.pem --session session logout
 ```
 
+## systems {#systems}
+
+Since **v0.4.0**, `redfish systems` drives the ComputerSystem resources: the Systems commands of the
+Ansible modules `redfish_command`, `redfish_config` and `redfish_info`. When the service has several
+systems, `--id` names the one to use (the last segment of its path). Without `--id`, such a service gets
+an error that lists the systems.
+
+| Command | What it does |
+| --- | --- |
+| `systems list` | lists the systems (their paths) |
+| `systems power` | `PowerOn`, `PowerForceOff`, `PowerForceRestart`, `PowerGracefulRestart`, `PowerGracefulShutdown`, `PowerReboot`, `PowerCycle`, `PowerFullPowerCycle`, each checked against the `ResetType` values the service allows |
+| `systems boot-override` | the boot source override: get, set, disable |
+| `systems boot-order` | the boot order: get, set, default |
+| `systems bios` | BIOS attributes: get, set (through `@Redfish.Settings`), verify, reset, registry |
+| `systems secure-boot` | UEFI Secure Boot: enable, disable |
+| `systems power-restore-policy` | get, set |
+| `systems led` | the system's indicator LED: on, off, blink |
+| `systems asset-tag` | sets `AssetTag` |
+| `systems inventory` | system, cpu, memory, nic, psu |
+| `systems health` | the health of the system and its subsystems |
+
+`redfish chassis led` sets the indicator LED of a chassis. Each command's flags are in its `--help`.
+
 ## Coming next {#next}
 
-v0.3.0 has only generic requests. Commands for each area (systems, chassis, managers, accounts, update,
-storage, events, certificates) come one minor release at a time, and each is marked in
-[Parity]({{< relref "parity.md" >}}) as it lands.
+Commands for the other areas (chassis sensors and power, managers, accounts, update, storage, events,
+certificates) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
+as it lands.

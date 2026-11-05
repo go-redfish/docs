@@ -7,7 +7,7 @@ description: "Install the redfish module, read what a node consumes, and turn re
 ## Install {#install}
 
 ```sh
-go get github.com/go-redfish/redfish@v0.3.0
+go get github.com/go-redfish/redfish@v0.4.0
 ```
 
 The library has no dependency outside the standard library. The `redfish` command, in `cmd/redfish`, also
@@ -107,6 +107,18 @@ _, err = c.Patch(ctx, "/redfish/v1/Systems/437XR1138R2",
 `Post` invokes an action. When the service answers 202 with a task monitor, `WaitTask` polls the monitor
 until the task ends. `Do` takes a full `Request` when you need another method or header. To try any of
 these without a real machine, see the [mock BMC]({{< relref "mock-bmc.md" >}}).
+
+## Systems {#systems}
+
+Since v0.4.0 the client drives the ComputerSystem resources the way the Ansible modules do:
+`SystemPower` and `ManagePower`, `SetBootOverride` and `SetBootOrder`, `BiosAttributes`,
+`SetBiosAttributes` and `VerifyBiosAttributes`, `SetSecureBoot`, `SetPowerRestorePolicy`,
+`SetIndicatorLED`, `SetAssetTag`, the inventories (`SystemInventory`, `CPUInventory`, `MemoryInventory`,
+`NICInventory`, `PSUInventory`) and `SystemHealthReport`. Like the Ansible modules, a power command is
+mapped to a `ResetType` the service allows (its `ActionInfo` or `AllowableValues`). Nothing is sent when
+the system is already in the state asked for, and an action the resource does not have is
+`ErrUnsupported`. With several systems, `ResolveSystem` picks one by id. Without an id, such a service
+returns `ErrAmbiguous`. The [`systems` commands]({{< relref "cli.md#systems" >}}) call these functions.
 
 ## Errors {#errors}
 
