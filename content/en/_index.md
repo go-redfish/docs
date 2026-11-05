@@ -16,13 +16,13 @@ standard library only) and BSD-3-Clause.
 | [Getting started]({{< relref "getting-started.md" >}}) | install the `redfish` module, read a node's energy, turn reads into kWh with the `Meter` |
 | [Security model]({{< relref "security-model.md" >}}) | what the client refuses, what it bounds, what a BMC's answer is trusted for (nothing) |
 | [Mock BMC]({{< relref "mock-bmc.md" >}}) | a Redfish service for tests, so that nothing is tested against a real machine |
-| [Command-line reference]({{< relref "cli.md" >}}) | the `redfish` command: sessions, raw requests, systems, chassis, managers, accounts, the mock BMC |
+| [Command-line reference]({{< relref "cli.md" >}}) | the `redfish` command: sessions, raw requests, systems, chassis, managers, accounts, update, the mock BMC |
 | [Parity]({{< relref "parity.md" >}}) | how far the client matches the Python tooling it replaces, command by command |
 
 ## Status {#status}
 
 The organisation has one repository with code, [`redfish`](https://github.com/go-redfish/redfish), whose
-**current release is v0.7.0**. It has the client (service discovery, Basic or session authentication, a
+**current release is v0.8.0**. It has the client (service discovery, Basic or session authentication, a
 CA file, bounded answers, typed errors), generic requests (`Do`, `Get`, `Patch` with `If-Match`, `Post`,
 `Delete`, `WaitTask`), the `Meter`, the [mock BMC]({{< relref "mock-bmc.md" >}}) with two DMTF trees, and
 the `redfish` command. v0.4.0 adds the Systems area: power, boot override and order, BIOS, secure boot,
@@ -31,7 +31,9 @@ thermals, fans, power supplies, health and LED, through both the older `Power` a
 and the newer `Sensors`, `PowerSubsystem`, `ThermalSubsystem` and `EnvironmentMetrics`. v0.6.0 adds
 the Managers area: manager power and factory reset, network services, NTP, date and time, network
 interfaces, host interfaces, logs and virtual media. v0.7.0 adds accounts (create, delete, enable, password, role,
-account service) and session management. The remaining areas (update, storage) come in the next minor releases, and [Parity]({{< relref "parity.md" >}}) says how
+account service) and session management. v0.8.0 adds firmware update (the BMC fetches an image, or an
+upload streamed from a file), its status and the firmware and software inventories. The last area
+(storage) come in the next minor releases, and [Parity]({{< relref "parity.md" >}}) says how
 far they have got.
 
 ## Links {#links}

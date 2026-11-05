@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.7.0.
+standard error. This page follows the `--help` of v0.8.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.7.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.8.0
 ```
 
 ## Global flags {#global}
@@ -191,7 +191,28 @@ echoes it back is redacted. Some services have a fixed number of account slots a
 DELETE. On those, like the Ansible modules, `add` fills an empty slot (or the one `--id` names) with a
 PATCH and `delete` empties the account.
 
+## update {#update}
+
+Since **v0.8.0**, `redfish update` drives the `UpdateService`: the Update commands of `redfish_command`
+and `redfish_info`.
+
+| Command | What it does |
+| --- | --- |
+| `update simple` | asks the BMC to fetch an image and update with it (`SimpleUpdate`) |
+| `update push` | uploads an image to the `MultipartHttpPushUri`, streamed from the file (`MultipartHTTPPushUpdate`) |
+| `update status` | the status of an update: its task or job (`GetUpdateStatus`) |
+| `update operations` | performs what the update asks for to continue: its resets (`PerformRequestedOperations`) |
+| `update inventory [--software]` | the firmware inventory, or the software inventory |
+| `update capabilities` | what the service can do: multipart push, actions, transfer protocols |
+
+`simple` and `push` start a task. Its monitor is printed on stderr and not awaited, like redfishtool's
+`-N`. Add `--watch` to follow the task to its end; progress goes to stderr. `push` accepts only a regular
+file and refuses one larger than `--max-size` (4 GiB by default) before it sends anything. The image is
+streamed, never loaded whole into memory. The image server's password comes from
+`--image-password-file` (mode 0600) or `--image-password-stdin`. A password written inside the image URI
+is refused.
+
 ## Coming next {#next}
 
-Commands for the other areas (update, storage) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
+Commands for the last area (storage) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
 as it lands.
