@@ -7,10 +7,11 @@ description: "Install the redfish module, read what a node consumes, and turn re
 ## Install {#install}
 
 ```sh
-go get github.com/go-redfish/redfish@v0.2.0
+go get github.com/go-redfish/redfish@v0.3.0
 ```
 
-The module has no dependency outside the standard library.
+The library has no dependency outside the standard library. The `redfish` command, in `cmd/redfish`, also
+uses cobra.
 
 ## Read a node {#read}
 
@@ -92,7 +93,22 @@ power it is the trapezoid of two samples, an estimate between them, and samples 
 `MaxGap` are not joined. A counter that goes down (a reboot) gives an invalid interval with the reason
 `counter reset`, never a negative energy.
 
+## Any other request {#requests}
+
+The generic methods reach any resource of the service:
+
+```go
+r, err := c.Get(ctx, "/redfish/v1/Systems/437XR1138R2")
+// change a property only if nobody changed the resource since it was read
+_, err = c.Patch(ctx, "/redfish/v1/Systems/437XR1138R2",
+	map[string]any{"AssetTag": "rack-12"}, r.ETag())
+```
+
+`Post` invokes an action. When the service answers 202 with a task monitor, `WaitTask` polls the monitor
+until the task ends. `Do` takes a full `Request` when you need another method or header. To try any of
+these without a real machine, see the [mock BMC]({{< relref "mock-bmc.md" >}}).
+
 ## Errors {#errors}
 
-A refused URL is an `ErrInsecure`; an HTTP status the BMC answered is a `*StatusError`. Both can be
-tested with `errors.Is` and `errors.As`.
+A refused URL is an `ErrInsecure`. An HTTP status the BMC answered is a `*StatusError`, which carries the
+Redfish error's code, message and extended info. Both can be tested with `errors.Is` and `errors.As`.

@@ -1,35 +1,54 @@
 ---
 title: "Mock BMC"
 weight: 40
-description: "A Redfish service for tests: status of the work and what it will serve."
+description: "mockbmc: the DMTF public-rackmount1 mockup served as a stateful Redfish service."
 ---
-
-{{< callout type="warning" >}}
-**Not released.** The mock BMC is being written in [`go-redfish/redfish`](https://github.com/go-redfish/redfish)
-and is not in v0.2.0. This page states what it is for; it will be replaced by its reference when it is
-tagged. Until then, the client's own tests use a local `httptest` TLS server.
-{{< /callout >}}
 
 ## Why a mock {#why}
 
-Nothing in a test suite should talk to a real machine: a BMC can power a server off, and a suite that
-needs one is a suite nobody runs. The mock BMC is a Redfish service in Go that a test starts in-process,
-or that a developer runs from the command line, so that the client, the command and anything built on
-them are tested against the protocol rather than against a vendor.
+A test suite should never talk to a real machine: a BMC can power a server off, and nobody runs a suite
+that needs one. The package [`mockbmc`](https://pkg.go.dev/github.com/go-redfish/redfish/mockbmc)
+(since v0.3.0) is a Redfish service that a test starts in-process. A developer can also start it from the
+command line with [`redfish mock serve`]({{< relref "cli.md#mock" >}}).
 
-## What it is meant to serve {#serves}
+## What it serves {#serves}
 
-- the service root, the `Chassis`, `Systems` and `SessionService` collections, with the links a real
-  service gives (so that discovery is exercised);
-- `EnvironmentMetrics` with an `EnergykWh` counter, and the older `Power` resource with its
-  `PowerControl`, so that both paths of the `Meter` are tested;
-- sessions (`X-Auth-Token`) and HTTP Basic authentication over TLS, with a certificate the test can
-  trust through `CAFile`;
-- faults on demand: a counter that resets, a power with a gap, an oversized answer, a malformed one, a
-  slow one, a redirect: the cases a BMC produces and a unit test would not think of.
+The tree is the DMTF **public-rackmount1** mockup (DSP2043, BSD-3-Clause), vendored with its licence. It
+has one system (`437XR1138R2`), one chassis (`1U`) and one manager (`BMC`), with the account, session,
+event, update, task, certificate and key services, BIOS, secure boot, virtual media, log services, sensors,
+`EnvironmentMetrics`, and both the older `Power`/`Thermal` resources and the newer
+`PowerSubsystem`/`ThermalSubsystem`.
+
+## How it behaves {#behaviour}
+
+Each rule comes from DSP0266 1.23.0:
+
+- the service root and `/redfish` are open. Every other request needs HTTP Basic or an `X-Auth-Token`
+  (13.3), else it gets 401 with a Redfish error;
+- a POST to `SessionService/Sessions` logs in (13.3.4.2) and answers 201 with a `Location` naming the
+  Session and an `X-Auth-Token` header. A DELETE of the Session logs out;
+- every resource has an `ETag`. A PATCH whose `If-Match` does not match gets 412 (6.5, 7.6);
+- a PATCH merges the properties sent into the resource and answers with the result;
+- a POST to a collection creates a member (201 and `Location`) and a DELETE removes it;
+- a POST to an action target is checked against the `AllowableValues` of its parameters.
+  `ComputerSystem.Reset` changes `PowerState`;
+- `UpdateService.SimpleUpdate` answers 202 with a task monitor in `Location` and a `Retry-After` header
+  (12.2). The monitor answers 202 `TaskPolls` times, then 200 with the Task;
+- an error is the Redfish error object with `@Message.ExtendedInfo` (8.6, 9.5.11).
+
+State is kept in memory. `BMC.Log()` returns every request served (`METHOD path status`) and
+`BMC.Resource(path)` returns a resource's current JSON, both for assertions.
+
+```go
+b, _ := mockbmc.New(mockbmc.Options{}) // admin / password
+srv := httptest.NewTLSServer(b.Handler())
+defer srv.Close()
+// point redfish.Config.BaseURL at srv.URL and trust srv.Certificate()
+```
 
 ## What it is not {#not}
 
-It is not a model of any vendor's firmware, and a client that passes against it has shown that it follows
-the DMTF documents, not that it works on your hardware. Parity with real implementations is a separate
-question, kept in [Parity]({{< relref "parity.md" >}}).
+It does not model any vendor's firmware. A client that passes against it follows the DMTF documents, which
+does not prove that it works on your hardware. Faults such as a counter reset, a gap in power samples or
+an oversized, malformed, slow or redirecting answer are not built into the mock. The client's own tests
+inject them with dedicated `httptest` servers.
