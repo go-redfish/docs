@@ -2,7 +2,7 @@
 
 Documentation of [go-redfish](https://github.com/go-redfish), built with Hugo and the
 [tannevaled/hextra](https://github.com/tannevaled/hextra) fork (a submodule pinned at the release tag
-`v0.24.1`; the page-history tool in CI is run at the same tag).
+`v0.24.1`; the page-history tool in CI is the nested module `cmd/pagehistory` at its own tag, `v0.21.0`).
 
 Published at <https://go-redfish.github.io/docs/>:
 
