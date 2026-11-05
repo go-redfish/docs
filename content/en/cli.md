@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.4.0.
+standard error. This page follows the `--help` of v0.5.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.4.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.5.0
 ```
 
 ## Global flags {#global}
@@ -101,10 +101,37 @@ an error that lists the systems.
 | `systems inventory` | system, cpu, memory, nic, psu |
 | `systems health` | the health of the system and its subsystems |
 
-`redfish chassis led` sets the indicator LED of a chassis. Each command's flags are in its `--help`.
+Each command's flags are in its `--help`.
+
+## chassis {#chassis}
+
+Since **v0.5.0**, `redfish chassis` reads and drives the Chassis resources: the Chassis commands of the
+Ansible modules `redfish_command` and `redfish_info`. `--id` names one chassis (the last segment of its
+path). Like the Ansible modules, the reading commands (`inventory`, `fans`, `power`, `thermals`, `psu`,
+`health`, `hpe`) cover every chassis when no `--id` is given. The other commands act on one chassis: the
+only one, or the one `--id` names. Without `--id`, a service with several chassis gets an error that lists
+them.
+
+| Command | What it reads or does |
+| --- | --- |
+| `chassis list` | lists the chassis (their paths) |
+| `chassis inventory` | the identity of the chassis (`GetChassisInventory`) |
+| `chassis power` | `PowerControl` of the `Power` resources (`GetChassisPower`) |
+| `chassis thermals` | temperatures of the `Thermal` resources (`GetChassisThermals`) |
+| `chassis fans` | fans of the `Thermal` resources (`GetFanInventory`) |
+| `chassis psu` | power supplies present (`GetPsuInventory`) |
+| `chassis health` | the health of the chassis, its power supplies, fans and PCIe devices (`GetHealthReport`) |
+| `chassis led` | the indicator LED: on, off, blink |
+| `chassis sensors` | the `Sensor` resources (`Sensors` collection) |
+| `chassis power-subsystem` | `PowerSubsystem` and its power supplies |
+| `chassis thermal-subsystem` | `ThermalSubsystem`, its fans and `ThermalMetrics` |
+| `chassis metrics` | `EnvironmentMetrics`: power, energy, temperature, fan speeds |
+| `chassis hpe` | HPE OEM settings covered by the Ansible modules: `thermal-config`, `fan-percent-min` |
+
+The `Power` and `Thermal` resources are deprecated in favour of `PowerSubsystem`, `ThermalSubsystem`
+and `Sensors`, but many BMCs still serve only them, so the command reads both.
 
 ## Coming next {#next}
 
-Commands for the other areas (chassis sensors and power, managers, accounts, update, storage, events,
-certificates) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
+Commands for the other areas (managers, accounts, update, storage, events, certificates) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
 as it lands.
