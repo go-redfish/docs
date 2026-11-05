@@ -19,6 +19,17 @@ event, update, task, certificate and key services, BIOS, secure boot, virtual me
 `EnvironmentMetrics`, and both the older `Power`/`Thermal` resources and the newer
 `PowerSubsystem`/`ThermalSubsystem`.
 
+## Two trees {#trees}
+
+A client tuned to one tree learns that tree's shortcuts, so since v0.4.0 the mock can serve a second one:
+`mockbmc.Options{Tree: mockbmc.TreeEmulator}` serves `emulator-1u`, the static tree of the DMTF Redfish
+Interface Emulator (BSD-3-Clause). That tree has no `Links.Sessions`, and its collections link their
+members differently. The default is `mockbmc.TreeRackmount`. The library's Systems tests run against both
+trees. `redfish mock serve` always serves the rackmount tree.
+
+For BIOS settings, boot order and action checks, the mock adds what the static trees lack: a `BootOrder`,
+`@Redfish.ActionInfo` resources, a BIOS attribute registry and BIOS `Settings` applied immediately.
+
 ## How it behaves {#behaviour}
 
 Each rule comes from DSP0266 1.23.0:

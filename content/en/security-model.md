@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.3.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.4.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
