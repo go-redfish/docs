@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.8.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.9.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -68,6 +68,8 @@ The `redfish` command follows the same rules, with these additions:
   inside an image URI is refused;
 - `update push` streams the image from a regular file and refuses one larger than `--max-size` before
   it sends anything (v0.8.0);
+- `storage volume delete` deletes only volumes named one by one. It prints them before the first
+  deletion, deletes nothing if one name is unknown, and has `--dry-run` (v0.9.0);
 - `--insecure` turns certificate verification off for one run. You have to ask for it explicitly, it
   prints a warning on stderr, and it is refused together with `--ca-file`.
 

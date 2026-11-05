@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.8.0.
+standard error. This page follows the `--help` of v0.9.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.8.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.9.0
 ```
 
 ## Global flags {#global}
@@ -212,7 +212,24 @@ streamed, never loaded whole into memory. The image server's password comes from
 `--image-password-file` (mode 0600) or `--image-password-stdin`. A password written inside the image URI
 is refused.
 
-## Coming next {#next}
+## storage {#storage}
 
-Commands for the last area (storage) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
-as it lands.
+Since **v0.9.0**, `redfish storage` drives the storage of a system: `GetStorageControllerInventory`,
+`GetDiskInventory` and `GetVolumeInventory` of `redfish_info`, and `CreateVolume` and `DeleteVolumes` of
+`redfish_config`. `--id` picks the system, as for `systems`.
+
+| Command | What it reads or does |
+| --- | --- |
+| `storage controllers` | the storage controllers |
+| `storage disks` | the drives of each controller, from `Storage`, or from the older `SimpleStorage` when the system has no `Storage` |
+| `storage volumes` | the volumes of each controller |
+| `storage volume create --storage ID` | creates a volume: `--raid-type`, `--drive` (repeatable), `--name`, `--capacity-bytes`; the RAID type and the drives are checked against the controller before anything is sent |
+| `storage volume delete --storage ID VOLUME_ID...` | deletes the volumes named |
+
+Deleting a volume destroys its data, so `volume delete` deletes only the volumes it is given by name.
+It has no option to delete all of them. It prints the paths on stderr before the first deletion. If one
+name is not a volume of the subsystem, nothing is deleted. `--dry-run` prints the paths and deletes
+nothing.
+
+With v0.9.0 every command of the three Ansible modules has its function and its command: see
+[Parity]({{< relref "parity.md" >}}).
