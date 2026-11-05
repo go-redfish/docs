@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.6.0.
+standard error. This page follows the `--help` of v0.7.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.6.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.7.0
 ```
 
 ## Global flags {#global}
@@ -35,6 +35,9 @@ never appears in a process listing or a shell history.
 | `redfish session login` | logs in with `--user` and `--password-file` by POSTing to the Sessions collection (DSP0266 13.3.4). The `X-Auth-Token` is saved in a 0600 file under the user's config directory and is never printed |
 | `redfish session status` | says whether a session is saved for `--endpoint` |
 | `redfish session logout` | ends the saved session at the BMC and removes its file |
+| `redfish session list` | lists the active sessions of the service (v0.7.0) |
+| `redfish session clear` | ends every active session of the service, its own last (v0.7.0) |
+| `redfish session config` | changes `SessionService` properties (v0.7.0) |
 
 Afterwards, pass `--session` to any command instead of `--user` and `--password-file`.
 
@@ -163,7 +166,32 @@ is sent when the image is already inserted. The password to fetch the image is r
 v0.6.0 also added `systems virtual-media` (get, insert, eject) for services that attach virtual media to
 the system, `systems logs` (entries and clear) and `chassis logs`.
 
+## accounts {#accounts}
+
+Since **v0.7.0**, `redfish accounts` drives the `AccountService`: the Accounts commands of
+`redfish_command` and the `ListUsers` and `GetAccountServiceConfig` commands of `redfish_info`. An
+account is named by its user name, or by `--id` (its Id).
+
+| Command | What it does |
+| --- | --- |
+| `accounts list` | the accounts, without the empty slots (`ListUsers`) |
+| `accounts add USERNAME` | creates the account; nothing is done when the user exists (`AddUser`) |
+| `accounts delete USERNAME` | deletes the account; nothing is done when it does not exist (`DeleteUser`) |
+| `accounts enable`, `disable` | `EnableUser`, `DisableUser` |
+| `accounts password` | sets the account's password (`UpdateUserPassword`) |
+| `accounts rename` | `UpdateUserName` |
+| `accounts role` | sets `RoleId` (`UpdateUserRole`) |
+| `accounts types` | sets `AccountTypes` and/or `OEMAccountTypes` |
+| `accounts roles` | the roles of the service |
+| `accounts config [set]` | shows the `AccountService` (`GetAccountServiceConfig`) or changes it |
+
+A new password comes only from `--new-password-file` (mode 0600) or `--new-password-stdin`. No flag
+takes it and no environment variable is read. It is never printed, and an error from a service that
+echoes it back is redacted. Some services have a fixed number of account slots and refuse POST and
+DELETE. On those, like the Ansible modules, `add` fills an empty slot (or the one `--id` names) with a
+PATCH and `delete` empties the account.
+
 ## Coming next {#next}
 
-Commands for the other areas (accounts, update, storage, events, certificates) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
+Commands for the other areas (update, storage) come one minor release at a time, and each is marked in [Parity]({{< relref "parity.md" >}})
 as it lands.
