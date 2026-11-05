@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.2.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.3.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -18,7 +18,7 @@ documentation cites the DMTF text it comes from.
 | a query or a fragment in the base URL | the base is an address, not a request | `ErrInsecure` |
 | a `MetricsPath` outside `/redfish/` | a configured path must stay inside the service | `ErrInsecure` |
 | an HTTP redirect | a BMC that sends the client elsewhere would be sent the credentials there | the redirect response is returned as an error |
-| turning certificate verification off | there is no such setting | none |
+| turning certificate verification off | `Config` has no such setting; a caller that passes its own `Config.HTTP` client is responsible for that client's TLS settings | none |
 
 Certificates are verified against the system roots or, with `Config.CAFile`, against the authorities in
 that PEM file (a BMC usually has a private one). TLS 1.2 is the floor.
@@ -52,4 +52,20 @@ short fuzz run and `govulncheck` on every change.
 - It does not pin a certificate by fingerprint, only by authority.
 - It does not rate-limit: a caller that polls a BMC every second may exhaust the BMC, which is itself a
   small computer. A minute is a sensible interval for energy.
-- The mock BMC and the command are not covered by this page until they are released.
+
+## The command {#command}
+
+The `redfish` command follows the same rules, with these additions:
+
+- there is no password flag and no password environment variable. The password is read from
+  `--password-file`, whose mode should be 0600;
+- `session login` saves the session token in a 0600 file under the user's config directory and never
+  prints it. `session logout` ends the session at the BMC and removes the file;
+- `--insecure` turns certificate verification off for one run. You have to ask for it explicitly, it
+  prints a warning on stderr, and it is refused together with `--ca-file`.
+
+## The mock BMC {#mock}
+
+The [mock BMC]({{< relref "mock-bmc.md" >}}) is a test double. Its default password is `password`, it
+keeps everything in memory, and `redfish mock serve` listens on loopback by default with a self-signed
+certificate that is valid for 24 hours. Do not expose it on a network.
