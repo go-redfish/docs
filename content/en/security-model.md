@@ -23,6 +23,11 @@ documentation cites the DMTF text it comes from.
 Certificates are verified against the system roots or, with `Config.CAFile`, against the authorities in
 that PEM file (a BMC usually has a private one). TLS 1.2 is the floor.
 
+This is a difference from the tool it replaces. DMTF's `redfishtool` 1.1.8 never verifies a BMC's certificate:
+every request it sends passes `verify=False` (`redfishtoolTransport.py`, lines 256, 392 and 640), so it sends
+the password to whoever answers. Measured on the mock, verification costs `redfish` nothing visible (see
+[Parity]({{< relref "parity.md#performance" >}})).
+
 ## What the client bounds {#bounds}
 
 - **Size.** An answer is read up to `MaxBody` (1 MiB); a larger one is `ErrTooLarge`, never an
