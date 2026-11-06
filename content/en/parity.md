@@ -44,6 +44,22 @@ Where go-redfish deliberately differs from the Ansible modules (stricter checks,
 module would silently go on), the difference is commented in the code and listed in the repository's
 README.
 
+## Cost of one command {#performance}
+
+This was measured on 2026-11-06 against DMTF's `redfishtool` 1.1.8, the CLI that go-ansible's default Redfish
+backend shells out to. Both tools ran against the same mock BMC on loopback over HTTPS, in three rounds.
+
+| Wall clock, mean | `redfish` v0.9.0 | `redfishtool` 1.1.8 |
+| --- | --- | --- |
+| raw GET of the ComputerSystem (both print the whole resource) | 4.6–5.3 ms | 69–75 ms |
+| "get the system" (discovery, then the resource) | 5.6–5.9 ms | 76–83 ms |
+
+Most of the difference is the Python interpreter starting on every call: `redfishtool` uses 54–66 ms of CPU
+time per run before and around its two requests. The comparison is per CLI invocation. It does not measure a
+long-lived client making many requests or a real BMC, whose own latency would dominate both columns. The method,
+every figure and the commands to reproduce them are in
+[`BENCHMARKS.md`](https://github.com/go-redfish/redfish/blob/main/BENCHMARKS.md).
+
 ## How parity is judged {#method}
 
 The reference is the oracle: a behaviour is ported exactly, then compared with the reference's answer on
