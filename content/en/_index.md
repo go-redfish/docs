@@ -40,4 +40,5 @@ function and a CLI command; see [Parity]({{< relref "parity.md" >}}).
 ## Links {#links}
 
 - Source: [github.com/go-redfish](https://github.com/go-redfish)
+- Releases: [github.com/go-redfish/redfish/releases](https://github.com/go-redfish/redfish/releases)
 - Landing page: [go-redfish.github.io](https://go-redfish.github.io/)
