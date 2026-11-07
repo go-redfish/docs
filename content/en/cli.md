@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.10.0.
+standard error. This page follows the `--help` of v0.11.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.10.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.11.0
 ```
 
 ## Global flags {#global}
@@ -266,4 +266,35 @@ cleanly.
 redfish $E --session events listen --count 1 &
 redfish $E --session events test --message-id Base.1.0.Success
 # {"event":{"@odata.type":"#Event.v1_6_0.Event","Events":[{"EventId":"1","MessageId":"Base.1.0.Success",…}],…},"id":"1"}
+```
+
+## certs {#certs}
+
+Since **v0.11.0**, `redfish certs` drives the `CertificateService`. It follows DSP0266 1.23.0 sections
+9.9.13 and 13.1.3, and the CertificateService 1.2.2, Certificate 1.11.0 and CertificateLocations 1.0.4
+schemas.
+
+| Command | What it does |
+| --- | --- |
+| `certs status` | reads the CertificateService: its locations resource and the actions it has |
+| `certs list` | lists every certificate the service holds (`CertificateLocations`) |
+| `certs show ID\|PATH` | shows what the service says about a certificate, and what the certificate itself says: subject, issuer, validity, key and usages, decoded with `crypto/x509` |
+| `certs csr --collection PATH` | makes a certificate signing request (`GenerateCSR`) and writes the PEM to stdout or to a new file given with `--out` |
+| `certs install` | adds a certificate to a collection (POST) |
+| `certs replace` | puts a certificate in place of another (`ReplaceCertificate`) and prints the new one's path |
+| `certs delete` | removes a certificate |
+| `certs rekey`, `certs renew` | make a CSR from an existing certificate, with a new key pair or with the same one |
+
+A certificate signed from one of the service's own CSRs needs no private key. For any other certificate,
+the key comes from `--key-file` (mode 0600) or `--key-stdin`. It is checked against the certificate
+before anything is sent, and it is never printed: an error that contains it is redacted. A certificate
+string that already contains a private key is refused, so that the key can only reach the BMC through
+that path. Passwords (the CSR challenge password, a PKCS#12 password) come from 0600 files, never from a
+flag.
+
+```sh
+redfish $E --session -o table certs list
+redfish $E --session certs csr --collection /redfish/v1/Managers/BMC/NetworkProtocol/HTTPS/Certificates \
+  --common-name bmc.example.org --out bmc.csr
+# csr: subject CN=bmc.example.org, ECDSA P-256, signature valid: true
 ```
