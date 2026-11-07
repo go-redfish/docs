@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.11.0.
+standard error. This page follows the `--help` of v0.12.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.11.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.12.0
 ```
 
 ## Global flags {#global}
@@ -23,6 +23,7 @@ go install github.com/go-redfish/redfish/cmd/redfish@v0.11.0
 | `--ca-file` | PEM file of the CAs that sign the BMC's certificate (default: the system roots) |
 | `--insecure` | do not verify the BMC's certificate; prints a warning on stderr and cannot be combined with `--ca-file` |
 | `--timeout` | per-request timeout (default `10s`) |
+| `--no-expand` | read a collection's members one by one, never with `$expand` (v0.12.0; by default `$expand` is used when the service advertises it) |
 | `-o`, `--output` | `json` (default) or `table` |
 
 There is no password flag and no password environment variable. The password is read from a file, so it
@@ -57,6 +58,39 @@ Afterwards, pass `--session` to any command instead of `--user` and `--password-
 `--data` is the JSON body: the text itself, `@file`, or `-` for standard input. A 202 answer names a task
 monitor: the monitor is printed on stderr and the Task body on stdout. A non-2xx answer is an error that
 carries what the service said: its code, its message and `@Message.ExtendedInfo`.
+
+### Query parameters {#queries}
+
+Since **v0.12.0**, `raw get` can send the query parameters of DSP0266 1.23.0 section 7.3:
+
+| Flag | Parameter |
+| --- | --- |
+| `--expand N`, `--expand-kind nolinks\|links\|all` | `$expand`, with N levels (7.3.2) |
+| `--select A,B/C` | `$select` (7.3.3) |
+| `--filter EXPR` | `$filter` on a collection's members, e.g. `"Status/State eq 'Enabled'"` (7.3.4) |
+| `--top N`, `--skip N` | `$top`, `$skip` |
+| `--only` | `only`: a collection of exactly one member answers with that member |
+| `--excerpt` | `excerpt`: the properties of the schema's Excerpt annotation |
+
+A parameter is sent only when the service root advertises it in `ProtocolFeaturesSupported`. Otherwise
+the command fails and names the missing feature: a BMC that does not implement a parameter may ignore it
+silently and return something other than what was asked.
+
+With `$expand` on a collection, `$select` names member properties by their path under `Members`. For
+example, one request returns every sensor's reading:
+
+```sh
+redfish $E --session raw get /redfish/v1/Chassis/1U/Sensors --expand 1 --select Members/Reading
+```
+
+`--select Reading` alone selects a property of the collection itself, which has none, so the answer
+comes back without its members.
+
+The commands that read a collection member by member (inventories, sensors, power and thermal
+subsystems, firmware, accounts, roles, subscriptions) now use `$expand` whenever the service advertises
+it. On the mock, `chassis sensors` drops from 43 requests to 2, and the output is byte-for-byte the
+same. `--no-expand` (global) goes back to member-by-member reads. They are also the fallback whenever an
+expanded answer is refused, too large, or returns members as bare links.
 
 ## mock serve {#mock}
 

@@ -71,6 +71,7 @@ spec section, the function, the command and the test, and a test checks that sec
 | --- | --- | --- |
 | EventService: subscriptions, test event, SSE stream (12.1, 12.5) | v0.10.0 | the receiving end of push events (that is a server's job, not a client's); SNMP, SMTP, Syslog, Kafka and OEM protocols; changing an existing subscription or the service |
 | CertificateService: locations, show (x509), CSR, install, replace, delete, rekey, renew (9.9.13, 13.1.3) | v0.11.0 | decoding PKCS#7 and PKCS#12 (sent, not decoded: Go's standard library has no reader for them); automatic enrollment; SPDM and UEFI properties; changing a certificate in place; encrypted private keys (the schema has no passphrase parameter) |
+| Query parameters: `$expand`, `$select`, `$filter`, `$top`/`$skip`, `only`, `excerpt` (7.3), each sent only when `ProtocolFeaturesSupported` advertises it | v0.12.0 | `$skiptoken` (opaque; the next link is already followed); `includeoriginofcondition` (belongs to the event stream, saves no request); OEM parameters; `$expand` not yet used for storage, virtual media, host interfaces, health and logs |
 
 ## How parity is judged {#method}
 

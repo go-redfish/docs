@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.11.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.12.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -83,6 +83,10 @@ The `redfish` command follows the same rules, with these additions:
   is checked against the certificate first, and is redacted from every error. A certificate string that
   already holds a key is refused, and a key in a BMC's answer is refused (CSR) or stripped (certificate)
   (v0.11.0);
+- query parameters are sent only when the service advertises them, and are built by an encoder that
+  refuses `&`, `#` and any name or value the grammar forbids, so a value cannot add a parameter (fuzzed).
+  An expanded answer is bounded too, at 8 MiB instead of 1 MiB, and only for `$expand` requests
+  (v0.12.0);
 - `--insecure` turns certificate verification off for one run. You have to ask for it explicitly, it
   prints a warning on stderr, and it is refused together with `--ca-file`.
 

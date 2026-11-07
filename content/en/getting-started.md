@@ -7,7 +7,7 @@ description: "Install the redfish module, read what a node consumes, and turn re
 ## Install {#install}
 
 ```sh
-go get github.com/go-redfish/redfish@v0.11.0
+go get github.com/go-redfish/redfish@v0.12.0
 ```
 
 The library has no dependency outside the standard library. The `redfish` command, in `cmd/redfish`, also
