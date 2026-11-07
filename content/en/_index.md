@@ -22,7 +22,7 @@ standard library only) and BSD-3-Clause.
 ## Status {#status}
 
 The organisation has one repository with code, [`redfish`](https://github.com/go-redfish/redfish), whose
-**current release is v0.10.0**. It has the client (service discovery, Basic or session authentication, a
+**current release is v0.11.0**. It has the client (service discovery, Basic or session authentication, a
 CA file, bounded answers, typed errors), generic requests (`Do`, `Get`, `Patch` with `If-Match`, `Post`,
 `Delete`, `WaitTask`), the `Meter`, the [mock BMC]({{< relref "mock-bmc.md" >}}) with two DMTF trees, and
 the `redfish` command. v0.4.0 adds the Systems area: power, boot override and order, BIOS, secure boot,
@@ -37,7 +37,9 @@ storage: controllers, disks, volumes, and volume creation and deletion. With it,
 commands of the Ansible `redfish_info`, `redfish_command` and `redfish_config` modules has a library
 function and a CLI command; see [Parity]({{< relref "parity.md" >}}). From v0.10.0 the client goes beyond
 those modules, following the Redfish specification itself: v0.10.0 adds the EventService, meaning
-subscriptions, test events and the server-sent event stream.
+subscriptions, test events and the server-sent event stream, and v0.11.0 adds the CertificateService,
+meaning listing and decoding certificates, generating CSRs, and installing, replacing, renewing and
+deleting certificates.
 
 ## Links {#links}
 

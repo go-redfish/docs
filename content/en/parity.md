@@ -70,6 +70,7 @@ spec section, the function, the command and the test, and a test checks that sec
 | Area | Since | Not covered (and why) |
 | --- | --- | --- |
 | EventService: subscriptions, test event, SSE stream (12.1, 12.5) | v0.10.0 | the receiving end of push events (that is a server's job, not a client's); SNMP, SMTP, Syslog, Kafka and OEM protocols; changing an existing subscription or the service |
+| CertificateService: locations, show (x509), CSR, install, replace, delete, rekey, renew (9.9.13, 13.1.3) | v0.11.0 | decoding PKCS#7 and PKCS#12 (sent, not decoded: Go's standard library has no reader for them); automatic enrollment; SPDM and UEFI properties; changing a certificate in place; encrypted private keys (the schema has no passphrase parameter) |
 
 ## How parity is judged {#method}
 

@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.10.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.11.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -79,6 +79,10 @@ The `redfish` command follows the same rules, with these additions:
   headers the BMC will send with every event are read from a 0600 file or stdin, never printed, and
   redacted from errors. `events listen` refuses a line or an event larger than 1 MiB instead of
   buffering it (v0.10.0);
+- a private key sent with a certificate (`certs install`/`replace`) comes only from a 0600 file or stdin,
+  is checked against the certificate first, and is redacted from every error. A certificate string that
+  already holds a key is refused, and a key in a BMC's answer is refused (CSR) or stripped (certificate)
+  (v0.11.0);
 - `--insecure` turns certificate verification off for one run. You have to ask for it explicitly, it
   prints a warning on stderr, and it is refused together with `--ca-file`.
 
