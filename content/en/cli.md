@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.9.0.
+standard error. This page follows the `--help` of v0.10.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.9.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.10.0
 ```
 
 ## Global flags {#global}
@@ -233,3 +233,37 @@ nothing.
 
 With v0.9.0 every command of the three Ansible modules has its function and its command: see
 [Parity]({{< relref "parity.md" >}}).
+
+## events {#events}
+
+Since **v0.10.0**, `redfish events` drives the `EventService`. This goes beyond the Ansible modules, and
+the reference is the Redfish specification itself: DSP0266 1.23.0, section 12.1 (eventing) and section
+12.5 (server-sent events).
+
+| Command | What it does |
+| --- | --- |
+| `events status` | reads the EventService: whether it is enabled, its SSE URI, and the formats, registries, resource types and SSE filters it supports |
+| `events subscriptions` | lists the subscriptions, or shows one |
+| `events subscribe --destination URL` | creates a subscription, so the service POSTs events to that URL |
+| `events unsubscribe` | deletes a subscription |
+| `events test --message-id ID` | submits a test event (`SubmitTestEvent`) |
+| `events listen` | opens the SSE stream and prints events as they arrive, until Ctrl-C or `--count` |
+
+`subscribe` checks its filters (`--registry-prefix`, `--resource-type`, `--message-id`, `--origin`…)
+against what the service supports before it sends anything. The destination must be an https URL with no
+credentials, query or fragment. The service sends HTTP headers with every event, usually an
+`Authorization` header for the receiver, and those headers are credentials. So they come from
+`--headers-file` (mode 0600) or `--headers-stdin`, never from a flag, and are never printed.
+
+`listen` prints one JSON line per event with `-o json`. `--filter` is passed as the stream's `$filter`
+(for example `--filter "MessageId eq 'Contoso.1.0.TempAssert'"`), and the service applies it. The stream
+is bounded: a line or an event larger than `--max-line` or `--max-event-bytes` (1 MiB each by default,
+DSP0266 12.1.2) ends it with an error. After a broken connection, `listen` reconnects up to
+`--reconnects` times, resuming with `Last-Event-ID`. An end by the service, a Ctrl-C or `--count` ends it
+cleanly.
+
+```sh
+redfish $E --session events listen --count 1 &
+redfish $E --session events test --message-id Base.1.0.Success
+# {"event":{"@odata.type":"#Event.v1_6_0.Event","Events":[{"EventId":"1","MessageId":"Base.1.0.Success",…}],…},"id":"1"}
+```
