@@ -60,6 +60,17 @@ long-lived client making many requests or a real BMC, whose own latency would do
 every figure and the commands to reproduce them are in
 [`BENCHMARKS.md`](https://github.com/go-redfish/redfish/blob/main/BENCHMARKS.md).
 
+## Beyond the Ansible modules {#beyond}
+
+The three Ansible modules stop at the commands above. From v0.10.0, go-redfish covers further areas of
+the Redfish specification, which then serves as the reference, with section numbers from DSP0266
+1.23.0 and the DSP8010 2025.4 schemas. `PARITY.md` lists them in its own section. Each row gives the
+spec section, the function, the command and the test, and a test checks that section.
+
+| Area | Since | Not covered (and why) |
+| --- | --- | --- |
+| EventService: subscriptions, test event, SSE stream (12.1, 12.5) | v0.10.0 | the receiving end of push events (that is a server's job, not a client's); SNMP, SMTP, Syslog, Kafka and OEM protocols; changing an existing subscription or the service |
+
 ## How parity is judged {#method}
 
 The reference is the oracle: a behaviour is ported exactly, then compared with the reference's answer on
