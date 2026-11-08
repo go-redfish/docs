@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.13.0.
+standard error. This page follows the `--help` of v0.14.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.13.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.14.0
 ```
 
 ## Global flags {#global}
@@ -342,3 +342,38 @@ redfish $E --session certs csr --collection /redfish/v1/Managers/BMC/NetworkProt
   --common-name bmc.example.org --out bmc.csr
 # csr: subject CN=bmc.example.org, ECDSA P-256, signature valid: true
 ```
+
+## telemetry {#telemetry}
+
+Since **v0.14.0**, `redfish telemetry` drives the `TelemetryService`. It follows the DSP8010 2025.4
+schemas TelemetryService 1.4.1, MetricDefinition 1.3.6, MetricReportDefinition 1.4.7, MetricReport
+1.5.2 and Triggers 1.4.0, and DSP0266 1.23.0 section 12.5.2 for metric reports sent over the event
+stream.
+
+| Command | What it reads or does |
+| --- | --- |
+| `telemetry status` | the service: enabled, collection functions, minimum interval, maximum reports |
+| `telemetry definitions` | the metric definitions |
+| `telemetry report-definitions` | the metric report definitions: type, schedule, metrics, report actions |
+| `telemetry reports` | the metric reports |
+| `telemetry report ID` | one report; with `-o table`, one line per metric and timestamp (a time series) |
+| `telemetry triggers` | the triggers (thresholds and actions); a service may have none |
+| `telemetry create-definition`, `delete-definition` | write a metric report definition, checked first against the metric definitions and the service's limits (minimum interval, collection functions, maximum reports) |
+| `telemetry test` | submits a test metric report (`SubmitTestMetricReport`) |
+| `telemetry watch` | prints the metric reports the service sends over the event stream, until Ctrl-C or `--count` |
+
+The schema carries a metric value as a string. The JSON output keeps it as sent (`raw`) and adds a
+`number` only when the value is one. The table never turns a value that is not a number into 0. For a
+definition of type `OnRequest`, reading its report is what generates it: the schemas define no action
+for it.
+
+```sh
+redfish $E --session -o table telemetry report PowerMetrics
+# METRIC       PROPERTY                                            TIME                  VALUE
+# TotalPower   /redfish/v1/Chassis/1U/Sensors/TotalPower#/Reading  2026-11-08T11:48:28Z  374
+# TotalEnergy  /redfish/v1/Chassis/1U/Sensors/TotalEnergy#/Reading 2026-11-08T11:48:28Z  325675
+redfish $E --session -o table telemetry watch --count 1
+```
+
+For a library user, `ReadingsFromSeries` feeds a metric report's energy series to the existing `Meter`.
+It is opt-in, and `Read` and `Meter` behave as before.
