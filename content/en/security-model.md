@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.12.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.13.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -87,6 +87,11 @@ The `redfish` command follows the same rules, with these additions:
   refuses `&`, `#` and any name or value the grammar forbids, so a value cannot add a parameter (fuzzed).
   An expanded answer is bounded too, at 8 MiB instead of 1 MiB, and only for `$expand` requests
   (v0.12.0);
+- `-o table` removes control characters from everything a BMC returns before it reaches the terminal:
+  values, and since v0.12.1 property names too. Before v0.12.1 a property name such as
+  `"\u001b[31mred"` reached the terminal as-is, so a malicious or compromised BMC could rewrite or hide
+  what the operator sees. The fuzzer (`FuzzRenderTable`) found it, and the input that triggered it is
+  kept as a regression seed. `-o json` was never affected, because JSON escapes control characters;
 - `--insecure` turns certificate verification off for one run. You have to ask for it explicitly, it
   prints a warning on stderr, and it is refused together with `--ca-file`.
 

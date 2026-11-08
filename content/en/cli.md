@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.12.0.
+standard error. This page follows the `--help` of v0.13.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.12.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.13.0
 ```
 
 ## Global flags {#global}
@@ -86,11 +86,21 @@ redfish $E --session raw get /redfish/v1/Chassis/1U/Sensors --expand 1 --select 
 `--select Reading` alone selects a property of the collection itself, which has none, so the answer
 comes back without its members.
 
-The commands that read a collection member by member (inventories, sensors, power and thermal
-subsystems, firmware, accounts, roles, subscriptions) now use `$expand` whenever the service advertises
-it. On the mock, `chassis sensors` drops from 43 requests to 2, and the output is byte-for-byte the
+The commands that read a collection member by member now use `$expand` whenever the service advertises
+it. Since v0.12.0 that covers inventories, sensors, power and thermal subsystems, firmware, accounts,
+roles and subscriptions. v0.13.0 adds storage controllers, disks and volumes, host interfaces, virtual
+media, log services and their entries, and the health reports. On the mock, `chassis sensors` drops from
+43 requests to 2, and the system health report from 20 to 11, with output that is byte-for-byte the
 same. `--no-expand` (global) goes back to member-by-member reads. They are also the fallback whenever an
 expanded answer is refused, too large, or returns members as bare links.
+
+Three reads stay member by member, by design:
+
+- a storage's drives: a list of links inside the resource, not a collection;
+- the virtual media slots that `insert` and `eject` act on: each slot's `Allow` header is needed, and an
+  expanded member has none;
+- the pages of log entries are never cut with `$top`, because a shorter page need not carry a link to
+  the next one.
 
 ## mock serve {#mock}
 

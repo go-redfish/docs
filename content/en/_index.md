@@ -22,7 +22,7 @@ standard library only) and BSD-3-Clause.
 ## Status {#status}
 
 The organisation has one repository with code, [`redfish`](https://github.com/go-redfish/redfish), whose
-**current release is v0.12.0**. It has the client (service discovery, Basic or session authentication, a
+**current release is v0.13.0**. It has the client (service discovery, Basic or session authentication, a
 CA file, bounded answers, typed errors), generic requests (`Do`, `Get`, `Patch` with `If-Match`, `Post`,
 `Delete`, `WaitTask`), the `Meter`, the [mock BMC]({{< relref "mock-bmc.md" >}}) with two DMTF trees, and
 the `redfish` command. v0.4.0 adds the Systems area: power, boot override and order, BIOS, secure boot,
@@ -42,6 +42,9 @@ meaning listing and decoding certificates, generating CSRs, and installing, repl
 deleting certificates. v0.12.0 adds the query parameters (`$expand`, `$select`, `$filter`, `$top` and
 `$skip`, `only`, `excerpt`), used only when the service advertises them. Collections are now read in
 one request instead of one per member: on the mock, `chassis sensors` drops from 43 requests to 2.
+v0.12.1 fixes a terminal escape injection in `-o table` output (see the
+[security model]({{< relref "security-model.md" >}})), and v0.13.0 extends `$expand` to storage, host
+interfaces, virtual media, logs and health reports.
 
 ## Links {#links}
 
