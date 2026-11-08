@@ -6,10 +6,10 @@ description: "The redfish command: sessions, raw requests, systems, and a mock B
 
 The `redfish` command ships with the module since **v0.3.0**. It is a [cobra](https://github.com/spf13/cobra)
 command tree with POSIX flags and `--help` on every command. Results go to standard output and errors to
-standard error. This page follows the `--help` of v0.14.0.
+standard error. This page follows the `--help` of v0.15.0.
 
 ```sh
-go install github.com/go-redfish/redfish/cmd/redfish@v0.14.0
+go install github.com/go-redfish/redfish/cmd/redfish@v0.15.0
 ```
 
 ## Global flags {#global}
@@ -377,3 +377,34 @@ redfish $E --session -o table telemetry watch --count 1
 
 For a library user, `ReadingsFromSeries` feeds a metric report's energy series to the existing `Meter`.
 It is opt-in, and `Read` and `Meter` behave as before.
+
+## security {#security}
+
+Since **v0.15.0**, `redfish security` reads the security resources of the service. It follows the
+DSP8010 2025.4 schemas ComponentIntegrity 1.5.0, TrustedComponent 1.5.0, SecurityPolicy 1.1.0,
+KeyService 1.0.1, KeyPolicy 1.0.1 and Key 1.4.1. **Nothing here changes the service.** There is no
+command to revoke a certificate, change a policy or create a key, because a wrong write in this area can
+lock an operator out of the BMC.
+
+| Command | What it reads |
+| --- | --- |
+| `security integrity`, `integrity-show ID` | the ComponentIntegrity resources: SPDM and TPM identity, measurements (Base64 as sent, and hex), sessions, certificates |
+| `security measurements ID` | runs `SPDMGetSignedMeasurements`: the BMC exchanges SPDM messages with the device and returns a signed statement |
+| `security trusted` | the trusted components of the chassis (TPM, root of trust): firmware and certificates |
+| `security policy` | a manager's SecurityPolicy: SPDM and TLS policy, trusted and revoked certificates (decoded with `crypto/x509`) |
+| `security keys`, `key-policies` | the KeyService's NVMe-oF secrets and key policies |
+
+**The signature of signed measurements is not verified.** `measurements` returns what the BMC signed,
+but this client does not check that signature against the SPDM certificate chain (DSP0274). The output
+says so twice: on stderr, and in the JSON as `"signature_verified": false` with the reason. Do not treat
+the result as an attestation.
+
+**A key is never shown.** When a service returns a key's value (`KeyString`), `security keys` drops it
+and says only `"key_present": true`. On the mock, the key's value appears nowhere in that output. `redfish
+raw get` on the same resource prints what the service sent, key included, as `raw` always does.
+
+```sh
+redfish $E --session security integrity
+redfish $E --session security measurements SS-SPDM-0
+# note: the signature is not verified by this client
+```

@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.14.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.15.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -92,6 +92,9 @@ The `redfish` command follows the same rules, with these additions:
   `"\u001b[31mred"` reached the terminal as-is, so a malicious or compromised BMC could rewrite or hide
   what the operator sees. The fuzzer (`FuzzRenderTable`) found it, and the input that triggered it is
   kept as a regression seed. `-o json` was never affected, because JSON escapes control characters;
+- the security commands (v0.15.0) only read. They never revoke a certificate, change a policy or create
+  a key. Signed SPDM measurements are returned **without verifying their signature**, and the output says
+  so. A key a service returns is dropped before output: only `key_present` remains;
 - `--insecure` turns certificate verification off for one run. You have to ask for it explicitly, it
   prints a warning on stderr, and it is refused together with `--ca-file`.
 
