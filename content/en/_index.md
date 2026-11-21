@@ -22,7 +22,7 @@ standard library only) and BSD-3-Clause.
 ## Status {#status}
 
 The organisation has one repository with code, [`redfish`](https://github.com/go-redfish/redfish), whose
-**current release is v0.15.0**. It has the client (service discovery, Basic or session authentication, a
+**current release is v0.15.1**. It has the client (service discovery, Basic or session authentication, a
 CA file, bounded answers, typed errors), generic requests (`Do`, `Get`, `Patch` with `If-Match`, `Post`,
 `Delete`, `WaitTask`), the `Meter`, the [mock BMC]({{< relref "mock-bmc.md" >}}) with two DMTF trees, and
 the `redfish` command. v0.4.0 adds the Systems area: power, boot override and order, BIOS, secure boot,
@@ -48,7 +48,10 @@ interfaces, virtual media, logs and health reports. v0.14.0 adds the TelemetrySe
 definitions, report definitions, and metric reports read as time series or received over the event
 stream. v0.15.0 adds the security components, read-only: component integrity (SPDM and TPM
 measurements), trusted components, security policy, and key service. Signed measurements are returned
-without verifying their signature, and the output says so.
+without verifying their signature, and the output says so. v0.15.1 is a security fix from an audit of
+v0.15.0: a BMC could still reach the terminal through its error messages, an answer that is not JSON and
+the session location, and the session file could be written through a planted symbolic link (see the
+[security model]({{< relref "security-model.md#command" >}})).
 
 ## Links {#links}
 

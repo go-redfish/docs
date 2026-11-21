@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.15.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.15.1; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -91,7 +91,21 @@ The `redfish` command follows the same rules, with these additions:
   values, and since v0.12.1 property names too. Before v0.12.1 a property name such as
   `"\u001b[31mred"` reached the terminal as-is, so a malicious or compromised BMC could rewrite or hide
   what the operator sees. The fuzzer (`FuzzRenderTable`) found it, and the input that triggered it is
-  kept as a regression seed. `-o json` was never affected, because JSON escapes control characters;
+  kept as a regression seed;
+- since v0.15.1, nothing a BMC returns reaches the terminal raw, in any output. A security audit of
+  v0.15.0 found three paths the table fix had not covered: an error message from the BMC, printed as-is
+  on stderr; an answer that is not JSON, copied as it came even under `-o json`; and the session
+  `Location`, printed by `session login` and `session status`. All three are now cleaned. The cleaning also
+  drops the C1 controls (U+0080–U+009F) and the bidirectional overrides, which can reorder what a line
+  shows; `-o json` and event lines write them as `\uXXXX` escapes. A session `Location` holding a control
+  character, a `.` or `..` segment or an encoded `?` or `#` is refused, and the client no longer accepts
+  the bare `/redfish` as a task handle (both found in v0.15.1, the second by `FuzzOperationResults`).
+  Each output path has its own fuzz target, and the targets no longer skip inputs that contain ESC;
+- the session file is written to a random temporary name, created exclusively and without following a
+  symbolic link, then renamed; password and session files are opened once without following a link and
+  checked on the open descriptor, so the file read is the file checked. The session file is read under a
+  64 KiB cap (v0.15.1). On Windows, which has no "do not follow" flag, the check rests on the descriptor and
+  the exclusive creation;
 - the security commands (v0.15.0) only read. They never revoke a certificate, change a policy or create
   a key. Signed SPDM measurements are returned **without verifying their signature**, and the output says
   so. A key a service returns is dropped before output: only `key_present` remains;
