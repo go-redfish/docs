@@ -34,14 +34,28 @@ never appears in a process listing or a shell history.
 
 | Command | What it does |
 | --- | --- |
-| `redfish session login` | logs in with `--user` and `--password-file` by POSTing to the Sessions collection (DSP0266 13.3.4). The `X-Auth-Token` is saved in a 0600 file under the user's config directory and is never printed |
-| `redfish session status` | says whether a session is saved for `--endpoint` |
-| `redfish session logout` | ends the saved session at the BMC and removes its file |
+| `redfish session login` | logs in with `--user` and `--password-file` by POSTing to the Sessions collection (DSP0266 13.3.4). The `X-Auth-Token` is saved in a 0600 file under the user's config directory and is never printed. With `--session-store REF` (v0.18.0) the token goes to a secret manager instead and the file holds only the reference |
+| `redfish session status` | says whether a session is saved for `--endpoint`, and where its token is kept; it never opens the token |
+| `redfish session logout` | ends the saved session at the BMC and removes its file, and the stored token with `--session-store` |
 | `redfish session list` | lists the active sessions of the service (v0.7.0) |
 | `redfish session clear` | ends every active session of the service, its own last (v0.7.0) |
 | `redfish session config` | changes `SessionService` properties (v0.7.0) |
 
 Afterwards, pass `--session` to any command instead of `--user` and `--password-file`.
+
+To keep the token out of every file (v0.18.0), name a secret manager at login. The other commands are
+unchanged: `--session` finds the reference in the session file and opens the token from it.
+
+```sh
+redfish $E --user admin --password-from keychain:bmc/admin session login \
+  --session-store keychain:redfish-session/bmc1
+redfish $E --session systems power On
+redfish $E --session session logout   # ends the session, deletes the keychain item and the file
+```
+
+`--session-store` takes `keychain:SERVICE/ACCOUNT`, `secretservice:SERVICE/ACCOUNT` or `keepassxc:URL`.
+`file:` and `systemd-creds:` are refused, since the command could not delete them at logout. A re-login
+replaces the stored token. KeePassXC asks before it deletes an entry, and moves it to its Recycle Bin.
 
 ### Secret references {#secret-references}
 

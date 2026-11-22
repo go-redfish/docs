@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.17.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.18.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -91,7 +91,15 @@ The `redfish` command follows the same rules, with these additions:
   password sits in clear in a file or a unit. Every secret flag has the same `-from` twin (see the
   [command-line reference]({{< relref "cli.md#secret-references" >}}));
 - `session login` saves the session token in a 0600 file under the user's config directory and never
-  prints it. `session logout` ends the session at the BMC and removes the file;
+  prints it. `session logout` ends the session at the BMC and removes the file. Since v0.18.0,
+  `session login --session-store REF` keeps the token in a secret manager instead (`keychain:`,
+  `secretservice:SERVICE/ACCOUNT`, `keepassxc:`): the token never touches the disk, and the 0600 file holds
+  only the reference. A file holding both a token and a reference, or a reference to `file:` or
+  `systemd-creds:`, is refused before anything is opened, and a token read back that is empty, larger than
+  4096 bytes or holds a control character is refused. `session logout` and `session clear` delete the
+  entry as well as the file, even when the BMC does not answer; KeePassXC asks before it deletes, and moves
+  the entry to its Recycle Bin. If the token cannot be stored after the login, the new BMC session is
+  ended, so none is left open;
 - a password the command sends to the BMC (a new account's password, an image server's password) is
   read only from a 0600 file or standard input. In the library, an account password is a `Secret`,
   which prints as `[redacted]` in every format, and an error from a service that echoes it back is
