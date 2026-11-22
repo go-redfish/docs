@@ -22,7 +22,7 @@ standard library only) and BSD-3-Clause.
 ## Status {#status}
 
 The organisation has one repository with code, [`redfish`](https://github.com/go-redfish/redfish), whose
-**current release is v0.16.2**. It has the client (service discovery, Basic or session authentication, a
+**current release is v0.17.0**. It has the client (service discovery, Basic or session authentication, a
 CA file, bounded answers, typed errors), generic requests (`Do`, `Get`, `Patch` with `If-Match`, `Post`,
 `Delete`, `WaitTask`), the `Meter`, the [mock BMC]({{< relref "mock-bmc.md" >}}) with two DMTF trees, and
 the `redfish` command. v0.4.0 adds the Systems area: power, boot override and order, BIOS, secure boot,
@@ -55,7 +55,9 @@ the session location, and the session file could be written through a planted sy
 BMC sends against a stated property, and bounds `WaitTask` by `Config.TaskTimeout` (one hour by default)
 when the caller's context has no deadline. v0.16.1 refuses dot segments, plain or encoded, in every
 path a BMC returns. v0.16.2 fixes the two findings of the first long fuzz run: a BMC path must be under
-`/redfish/v1/`, and an NVMe-oF key a BMC copies into another field is redacted there too.
+`/redfish/v1/`, and an NVMe-oF key a BMC copies into another field is redacted there too. v0.17.0 gives every secret
+flag of the command a `-from` twin that takes a reference (`systemd-creds:`, `keychain:`, `secretservice:`,
+`keepassxc:`, `file:`) instead of a file, so a service can keep the BMC password sealed by systemd.
 
 ## Links {#links}
 

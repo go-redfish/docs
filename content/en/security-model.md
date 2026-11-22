@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.16.2; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.17.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -86,7 +86,10 @@ the key is now replaced by `[redacted]`.
 The `redfish` command follows the same rules, with these additions:
 
 - there is no password flag and no password environment variable. The password is read from
-  `--password-file`, whose mode should be 0600;
+  `--password-file`, whose mode should be 0600, or, since v0.17.0, resolved from a reference with
+  `--password-from` (a systemd credential, the macOS keychain, the Secret Service, KeePassXC or a checked file), so that no
+  password sits in clear in a file or a unit. Every secret flag has the same `-from` twin (see the
+  [command-line reference]({{< relref "cli.md#secret-references" >}}));
 - `session login` saves the session token in a 0600 file under the user's config directory and never
   prints it. `session logout` ends the session at the BMC and removes the file;
 - a password the command sends to the BMC (a new account's password, an image server's password) is
