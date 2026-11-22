@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.16.0; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.16.1; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -60,6 +60,13 @@ Since v0.16.0, `WaitTask` is bounded even when the caller's context has no deadl
 one hour by default (`DefaultTaskTimeout`), negative for no bound. Before it, a BMC whose task never ended
 held a caller with `context.Background()` forever. The same release fixed two fuzz findings: a huge
 `Retry-After` overflowed into a negative delay, and `ValidateURL` accepted an empty fragment.
+
+Since v0.16.1, every path a BMC hands the client (`@odata.id`, a task monitor, a `Location` header) goes
+through the same check as the session path: a `.` or `..` segment, written plainly or encoded (`%2e%2e`,
+any case), an encoded `/` and a malformed escape are refused. Before it, `/redfish/%2e%2e/x` passed the
+"under `/redfish/`" check while a server that decodes before it normalises would read `/x`. Such a path
+was only ever sent to the BMC's own host, so the most a hostile BMC could do was make the client ask
+it for another of its own paths.
 
 ## What it does not do {#limits}
 
