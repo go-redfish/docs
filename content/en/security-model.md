@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.16.1; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.16.2; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -67,6 +67,13 @@ any case), an encoded `/` and a malformed escape are refused. Before it, `/redfi
 "under `/redfish/`" check while a server that decodes before it normalises would read `/x`. Such a path
 was only ever sent to the BMC's own host, so the most a hostile BMC could do was make the client ask
 it for another of its own paths.
+
+v0.16.2 fixes the two findings of the first long fuzz run (ten minutes per target, on CI runners, weekly
+since then). A path a BMC returns must now be under the service root `/redfish/v1/`, not just under
+`/redfish/`; `raw get /redfish` still works, as a request you typed. And the NVMe-oF secrets of the
+KeyService: their key was already dropped, but a BMC could copy the key's text into another field of
+the answer, such as the hash allow-list, and it was printed there. Every string of the answer that holds
+the key is now replaced by `[redacted]`.
 
 ## What it does not do {#limits}
 
