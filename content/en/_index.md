@@ -22,7 +22,7 @@ standard library only) and BSD-3-Clause.
 ## Status {#status}
 
 The organisation has one repository with code, [`redfish`](https://github.com/go-redfish/redfish), whose
-**current release is v0.15.1**. It has the client (service discovery, Basic or session authentication, a
+**current release is v0.16.0**. It has the client (service discovery, Basic or session authentication, a
 CA file, bounded answers, typed errors), generic requests (`Do`, `Get`, `Patch` with `If-Match`, `Post`,
 `Delete`, `WaitTask`), the `Meter`, the [mock BMC]({{< relref "mock-bmc.md" >}}) with two DMTF trees, and
 the `redfish` command. v0.4.0 adds the Systems area: power, boot override and order, BIOS, secure boot,
@@ -51,7 +51,9 @@ measurements), trusted components, security policy, and key service. Signed meas
 without verifying their signature, and the output says so. v0.15.1 is a security fix from an audit of
 v0.15.0: a BMC could still reach the terminal through its error messages, an answer that is not JSON and
 the session location, and the session file could be written through a planted symbolic link (see the
-[security model]({{< relref "security-model.md#command" >}})).
+[security model]({{< relref "security-model.md#command" >}})). v0.16.0 fuzzes every parser of what a
+BMC sends against a stated property, and bounds `WaitTask` by `Config.TaskTimeout` (one hour by default)
+when the caller's context has no deadline.
 
 ## Links {#links}
 

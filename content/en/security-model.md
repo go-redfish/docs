@@ -6,7 +6,7 @@ description: "What the client refuses, what it bounds, and why a BMC's answer is
 
 A BMC is a privileged network service, often old and rarely patched, and it holds the keys to the
 machine. The client therefore treats what it says as data to check, and what it is given as secrets to
-keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.15.1; the package
+keep short-lived. Every rule below is in `github.com/go-redfish/redfish` at v0.16.0; the package
 documentation cites the DMTF text it comes from.
 
 ## What the client refuses {#refuses}
@@ -48,9 +48,18 @@ read it: read it from a file whose mode you check.
 
 ## Fuzzing and CI {#fuzzing}
 
-The two JSON decoders (`ParseEnvironmentMetrics`, `ParsePowerConsumed`) and the meter are fuzzed, and the
-inputs that once found a defect are committed under `testdata/fuzz/`. CI runs `go vet`, `go test -race`, a
-short fuzz run and `govulncheck` on every change.
+Every parser of something a BMC sends is fuzzed against a stated property, not only for crashes: the
+JSON decoders and the meter, URL validation (never accepts anything but https without credentials, query or
+fragment), `Retry-After` (never negative, never more than an hour), CSRs (never return a private key),
+service and session paths (always under `/redfish/`), the session file, every output path of the command
+(no control character reaches the terminal), and the mock BMC's request handler. The inputs that once found
+a defect are committed under `testdata/fuzz/` and replay in every `go test`. CI runs `go vet`,
+`go test -race`, a short fuzz run of every target and `govulncheck` on every change.
+
+Since v0.16.0, `WaitTask` is bounded even when the caller's context has no deadline: `Config.TaskTimeout`,
+one hour by default (`DefaultTaskTimeout`), negative for no bound. Before it, a BMC whose task never ended
+held a caller with `context.Background()` forever. The same release fixed two fuzz findings: a huge
+`Retry-After` overflowed into a negative delay, and `ValidateURL` accepted an empty fragment.
 
 ## What it does not do {#limits}
 
