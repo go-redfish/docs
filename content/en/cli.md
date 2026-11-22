@@ -19,6 +19,7 @@ go install github.com/go-redfish/redfish/cmd/redfish@v0.15.0
 | `--endpoint` | the BMC's address, `https://host[:port]` |
 | `--user` | user name |
 | `--password-file` | file holding the password (mode 0600) |
+| `--password-from` | a secret reference resolved by [secretsource](https://github.com/go-authn/secretsource) instead of a file (since v0.17.0): `systemd-creds:NAME`, `keychain:SERVICE/ACCOUNT`, `secretservice:SERVICE/ACCOUNT`, `keepassxc:URL` or `file:PATH` (mode 0600); exclusive with `--password-file` |
 | `--session` | use the session saved by `redfish session login` instead of the password |
 | `--ca-file` | PEM file of the CAs that sign the BMC's certificate (default: the system roots) |
 | `--insecure` | do not verify the BMC's certificate; prints a warning on stderr and cannot be combined with `--ca-file` |
@@ -41,6 +42,31 @@ never appears in a process listing or a shell history.
 | `redfish session config` | changes `SessionService` properties (v0.7.0) |
 
 Afterwards, pass `--session` to any command instead of `--user` and `--password-file`.
+
+### Secret references {#secret-references}
+
+Since v0.17.0 every flag that reads a secret from a file has a `-from` twin that takes a reference instead
+of a path: `--password-from`, `--new-password-from`, `--image-password-from`, `--key-from`,
+`--p12-password-from`, `--challenge-password-from`, `--headers-from` and `mock serve --mock-password-from`.
+Each is exclusive with its `-file` and `-stdin` siblings, which keep working. The reference is resolved by
+[secretsource](https://github.com/go-authn/secretsource), the fleet's one implementation, when the secret
+is needed; an error names the reference, never the secret.
+
+On Linux, a service keeps the BMC password sealed by systemd instead of in a file on disk:
+
+```sh
+systemd-creds encrypt --with-key=tpm2 --tpm2-pcrs=7 - /etc/credstore.encrypted/bmc-admin.cred
+```
+
+```ini
+[Service]
+LoadCredentialEncrypted=bmc-admin
+ExecStart=/usr/local/bin/redfish --endpoint https://bmc.example --user admin --password-from systemd-creds:bmc-admin systems power
+```
+
+The service then reads the password from `$CREDENTIALS_DIRECTORY`, a memory-only directory that exists
+only while it runs. A secret read this way is limited to 4096 bytes: a larger private key is refused
+with a message pointing to `--key-file` or `--key-stdin`.
 
 ## raw {#raw}
 
